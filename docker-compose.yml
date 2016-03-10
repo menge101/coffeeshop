@@ -20,3 +20,17 @@ mail:
   ports:
     - 1080:1080
     - 1025:1025
+
+stats-data:
+  image: busybox
+  volumes:
+    - /opt/graphite/storage:/opt/graphite/storage
+
+graphite:
+  image: hopsoft/graphite-statsd
+  ports:
+    - 80:80
+    - 8125:8125/udp
+    - 8126:8126
+  volumes_from:
+    - stats-data
