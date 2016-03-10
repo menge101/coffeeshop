@@ -34,3 +34,45 @@ graphite:
     - 8126:8126
   volumes_from:
     - stats-data
+
+elasticsearch:
+  image: elasticsearch:latest
+  command: elasticsearch -Des.network.host=0.0.0.0
+  volumes_from:
+    - elastic_data
+  ports:
+    - "9200:9200"
+    - "9300:9300"
+
+elastic_data:
+  image: busybox
+  volumes:
+    - /usr/share/elasticsearch/data
+
+logstash:
+  image: logstash:latest
+  command: logstash -f /etc/logstash/conf.d/logstash.conf
+  volumes_from:
+    - config
+  ports:
+    - "5000:5000"
+  links:
+    - elasticsearch
+
+kibana:
+  image: kibana
+  environment:
+    - NODE_OPTIONS:"--max-old-space-size=200"
+    - ELASTICSEARCH_URL:elasticsearch:9200
+  volumes_from:
+    - config
+  ports:
+    - "5601:5601"
+  links:
+    - elasticsearch
+
+config:
+  image: busybox
+  volumes:
+    - ./kibana/config/kibana.yml:/opt/kibana/config/kibana.yml
+    - ./logstash/config:/etc/logstash/conf.d
