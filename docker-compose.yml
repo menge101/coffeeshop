@@ -52,10 +52,11 @@ elastic_data:
 logstash:
   image: logstash:latest
   command: logstash -f /etc/logstash/conf.d/logstash.conf
-  volumes_from:
-    - config
+  volumes:
+    - ./logstash/config/:/etc/logstash/conf.d
   ports:
     - "5000:5000"
+    - "5528:5528"
   links:
     - elasticsearch
 
@@ -64,15 +65,9 @@ kibana:
   environment:
     - NODE_OPTIONS:"--max-old-space-size=200"
     - ELASTICSEARCH_URL:elasticsearch:9200
-  volumes_from:
-    - config
+  volumes:
+    - ./kibana/config/:/opt/kibana/config/
   ports:
     - "5601:5601"
   links:
     - elasticsearch
-
-config:
-  image: busybox
-  volumes:
-    - ./kibana/config/kibana.yml:/opt/kibana/config/kibana.yml
-    - ./logstash/config:/etc/logstash/conf.d
